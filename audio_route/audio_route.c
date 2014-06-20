@@ -88,13 +88,13 @@ static void path_print(struct audio_route *ar, struct mixer_path *path)
     unsigned int i;
     unsigned int j;
 
-    ALOGE("Path: %s, length: %d", path->name, path->length);
+    LOGE("Path: %s, length: %d", path->name, path->length);
     for (i = 0; i < path->length; i++) {
         struct mixer_ctl *ctl = index_to_ctl(ar, path->setting[i].ctl_index);
 
-        ALOGE("  id=%d: ctl=%s", i, mixer_ctl_get_name(ctl));
+        LOGE("  id=%d: ctl=%s", i, mixer_ctl_get_name(ctl));
         for (j = 0; j < path->setting[i].num_values; j++)
-            ALOGE("    id=%d value=%d", j, path->setting[i].value[j]);
+            LOGE("    id=%d value=%d", j, path->setting[i].value[j]);
     }
 }
 
@@ -131,7 +131,7 @@ static struct mixer_path *path_create(struct audio_route *ar, const char *name)
     struct mixer_path *new_mixer_path = NULL;
 
     if (path_get_by_name(ar, name)) {
-        ALOGE("Path name '%s' already exists", name);
+        LOGE("Path name '%s' already exists", name);
         return NULL;
     }
 
@@ -145,7 +145,7 @@ static struct mixer_path *path_create(struct audio_route *ar, const char *name)
         new_mixer_path = realloc(ar->mixer_path, ar->mixer_path_size *
                                  sizeof(struct mixer_path));
         if (new_mixer_path == NULL) {
-            ALOGE("Unable to allocate more paths");
+            LOGE("Unable to allocate more paths");
             return NULL;
         } else {
             ar->mixer_path = new_mixer_path;
@@ -189,7 +189,7 @@ static int alloc_path_setting(struct mixer_path *path)
         new_path_setting = realloc(path->setting,
                                    path->size * sizeof(struct mixer_setting));
         if (new_path_setting == NULL) {
-            ALOGE("Unable to allocate more path settings");
+            LOGE("Unable to allocate more path settings");
             return -1;
         } else {
             path->setting = new_path_setting;
@@ -210,7 +210,7 @@ static int path_add_setting(struct audio_route *ar, struct mixer_path *path,
     if (find_ctl_index_in_path(path, setting->ctl_index) != -1) {
         struct mixer_ctl *ctl = index_to_ctl(ar, setting->ctl_index);
 
-        ALOGE("Control '%s' already exists in path '%s'",
+        LOGE("Control '%s' already exists in path '%s'",
               mixer_ctl_get_name(ctl), path->name);
         return -1;
     }
@@ -241,7 +241,7 @@ static int path_add_value(struct audio_route *ar, struct mixer_path *path,
     ctl = index_to_ctl(ar, mixer_value->ctl_index);
     num_values = mixer_ctl_get_num_values(ctl);
     if (mixer_value->index >= (int)num_values) {
-        ALOGE("mixer index %d is out of range for '%s'", mixer_value->index,
+        LOGE("mixer index %d is out of range for '%s'", mixer_value->index,
               mixer_ctl_get_name(ctl));
         return -1;
     }
@@ -361,7 +361,7 @@ static void start_tag(void *data, const XML_Char *tag_name,
     /* Look at tags */
     if (strcmp(tag_name, "path") == 0) {
         if (attr_name == NULL) {
-            ALOGE("Unnamed path!");
+            LOGE("Unnamed path!");
         } else {
             if (state->level == 1) {
                 /* top level path: create and stash the path */
@@ -378,7 +378,7 @@ static void start_tag(void *data, const XML_Char *tag_name,
         /* Obtain the mixer ctl and value */
         ctl = mixer_get_ctl_by_name(ar->mixer, attr_name);
         if (ctl == NULL) {
-            ALOGE("Control '%s' doesn't exist - skipping", attr_name);
+            LOGE("Control '%s' doesn't exist - skipping", attr_name);
             goto done;
         }
 
@@ -411,7 +411,7 @@ static void start_tag(void *data, const XML_Char *tag_name,
                 if (id < ar->mixer_state[ctl_index].num_values)
                     ar->mixer_state[ctl_index].new_value[id] = value;
                 else
-                    ALOGE("value id out of range for mixer ctl '%s'",
+                    LOGE("value id out of range for mixer ctl '%s'",
                           mixer_ctl_get_name(ctl));
             } else {
                 /* set all values the same */
@@ -565,13 +565,13 @@ int audio_route_apply_path(struct audio_route *ar, const char *name)
     struct mixer_path *path;
 
     if (!ar) {
-        ALOGE("invalid audio_route");
+        LOGE("invalid audio_route");
         return -1;
     }
 
     path = path_get_by_name(ar, name);
     if (!path) {
-        ALOGE("unable to find path '%s'", name);
+        LOGE("unable to find path '%s'", name);
         return -1;
     }
 
@@ -586,13 +586,13 @@ int audio_route_reset_path(struct audio_route *ar, const char *name)
     struct mixer_path *path;
 
     if (!ar) {
-        ALOGE("invalid audio_route");
+        LOGE("invalid audio_route");
         return -1;
     }
 
     path = path_get_by_name(ar, name);
     if (!path) {
-        ALOGE("unable to find path '%s'", name);
+        LOGE("unable to find path '%s'", name);
         return -1;
     }
 
@@ -612,13 +612,13 @@ static int audio_route_update_path(struct audio_route *ar, const char *name, boo
     unsigned int j;
 
     if (!ar) {
-        ALOGE("invalid audio_route");
+        LOGE("invalid audio_route");
         return -1;
     }
 
     path = path_get_by_name(ar, name);
     if (!path) {
-        ALOGE("unable to find path '%s'", name);
+        LOGE("unable to find path '%s'", name);
         return -1;
     }
 
@@ -688,7 +688,7 @@ struct audio_route *audio_route_init(unsigned int card, const char *xml_path)
 
     ar->mixer = mixer_open(card);
     if (!ar->mixer) {
-        ALOGE("Unable to open the mixer, aborting.");
+        LOGE("Unable to open the mixer, aborting.");
         goto err_mixer_open;
     }
 
@@ -707,13 +707,13 @@ struct audio_route *audio_route_init(unsigned int card, const char *xml_path)
     file = fopen(xml_path, "r");
 
     if (!file) {
-        ALOGE("Failed to open %s", xml_path);
+        LOGE("Failed to open %s", xml_path);
         goto err_fopen;
     }
 
     parser = XML_ParserCreate(NULL);
     if (!parser) {
-        ALOGE("Failed to create XML parser");
+        LOGE("Failed to create XML parser");
         goto err_parser_create;
     }
 
@@ -733,7 +733,7 @@ struct audio_route *audio_route_init(unsigned int card, const char *xml_path)
 
         if (XML_ParseBuffer(parser, bytes_read,
                             bytes_read == 0) == XML_STATUS_ERROR) {
-            ALOGE("Error in mixer xml (%s)", MIXER_XML_PATH);
+            LOGE("Error in mixer xml (%s)", MIXER_XML_PATH);
             goto err_parse;
         }
 
